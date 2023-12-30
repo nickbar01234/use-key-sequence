@@ -16,6 +16,9 @@ export default {
     typescript({
       rollupCommonJSResolveHack: false,
       clean: true,
+      tsconfigOverride: {
+        exclude: ["**/*.spec.ts"],
+      },
     }),
   ],
   external: ["react", "react-dom"],

@@ -1,25 +1,30 @@
 import React from "react";
+import { useEventListener } from "./hooks";
 
 type Sequence = string;
-type SequenceFn = (key: string) => unknown;
+type SequenceFn = () => unknown;
 
 interface BaseProps {
   sequences: Record<Sequence, SequenceFn>;
-  shouldListen: boolean;
-  clearMarker?: string;
+  enabled: boolean;
+  clearMarker?: KeyboardEvent["key"];
   delay?: number;
-  triggerMarker?: string;
+  triggerMarker?: KeyboardEvent["key"];
 }
 
 type UseKeySequenceProps = BaseProps &
-  ({ delay: number } | { triggerMarker: string });
+  ({ delay: number } | { triggerMarker: KeyboardEvent["key"] });
 
 const useKeySequence = (props: UseKeySequenceProps) => {
-  const { sequences, clearMarker, delay, triggerMarker, shouldListen } = props;
-  const [listen, setListen] = React.useState(shouldListen);
+  const { sequences, clearMarker, delay, triggerMarker } = props;
+  const [enabled, setEnabled] = React.useState(props.enabled);
   const [sequence, setSequence] = React.useState("");
   const [timeOutId, setTimeOutId] = React.useState<undefined | number>(
     undefined
+  );
+  const maxContentLength = React.useMemo(
+    () => Math.max(...Object.keys(sequences).map((key) => key.length)),
+    [sequences]
   );
 
   const clearTimeOut = React.useCallback(() => {
@@ -28,81 +33,92 @@ const useKeySequence = (props: UseKeySequenceProps) => {
   }, [timeOutId]);
 
   const reset = React.useCallback(() => {
-    setSequence("");
     clearTimeOut();
+    setSequence("");
   }, [clearTimeOut]);
 
-  const execute = React.useCallback(
-    (sequence: string) => {
-      const fn = sequences[sequence];
-      if (fn !== undefined) {
-        fn(sequence);
+  const execute = React.useCallback(() => {
+    const fn = sequences[sequence];
+    reset();
+    if (fn !== undefined) {
+      fn();
+    }
+  }, [reset, sequence, sequences]);
+
+  const setEnabledWrapper = React.useCallback(
+    (enabled: boolean) => {
+      setEnabled(enabled);
+      if (!enabled) {
+        reset();
       }
-      reset();
     },
-    [reset, sequences]
+    [reset]
   );
 
   const onKeyDown = React.useCallback(
     (e: KeyboardEvent) => {
-      if (e.isComposing || !listen) {
+      if (e.isComposing || !enabled) {
         return;
       }
 
       if (e.key === clearMarker) {
         reset();
       } else if (e.key === triggerMarker) {
-        execute(sequence);
+        execute();
       } else if (e.key.length === 1) {
         clearTimeOut();
-        setSequence((prev) => prev + e.key);
+        setSequence((prev) => {
+          const newSequence = prev + e.key;
+          if (newSequence.length > maxContentLength) {
+            reset();
+            return "";
+          } else {
+            return newSequence;
+          }
+        });
       }
     },
-    [clearMarker, triggerMarker, clearTimeOut, listen, reset, sequence, execute]
+    [
+      clearMarker,
+      triggerMarker,
+      clearTimeOut,
+      enabled,
+      reset,
+      execute,
+      maxContentLength,
+    ]
   );
 
   const onKeyUp = React.useCallback(
     (e: KeyboardEvent) => {
-      if (e.isComposing || !listen) {
+      if (e.isComposing || !enabled) {
         return;
       }
 
       if (delay != undefined) {
-        const id = setTimeout(() => execute(sequence), delay);
+        const id = setTimeout(() => execute(), delay);
         setTimeOutId(id);
       }
     },
-    [sequence, delay, execute, listen]
+    [delay, execute, enabled]
   );
 
-  React.useEffect(() => {}, [delay]);
+  useEventListener({
+    enabled: enabled,
+    event: "keydown",
+    fn: onKeyDown,
+  });
 
-  React.useEffect(() => {
-    const cleanup = () => window.removeEventListener("keydown", onKeyDown);
-
-    if (shouldListen) {
-      window.addEventListener("keydown", onKeyDown);
-      return cleanup;
-    } else {
-      cleanup();
-    }
-  }, [shouldListen, onKeyDown]);
-
-  React.useEffect(() => {
-    const cleanup = () => window.removeEventListener("keyup", onKeyUp);
-
-    if (shouldListen) {
-      window.addEventListener("keyup", onKeyUp);
-      return cleanup;
-    } else {
-      cleanup();
-    }
-  }, [shouldListen, onKeyUp]);
+  useEventListener({
+    enabled: enabled,
+    event: "keyup",
+    fn: onKeyUp,
+  });
 
   return {
     sequence,
-    setListen,
     reset,
+    setEnabled: setEnabledWrapper,
     execute,
   };
 };
