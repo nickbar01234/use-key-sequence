@@ -12,6 +12,11 @@ export default {
       strict: false,
     },
   ],
-  plugins: [typescript()],
+  plugins: [
+    typescript({
+      rollupCommonJSResolveHack: false,
+      clean: true,
+    }),
+  ],
   external: ["react", "react-dom"],
 };

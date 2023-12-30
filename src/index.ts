@@ -1,7 +1,7 @@
 import React from "react";
 
 type Sequence = string;
-type SequenceFn = (key: string) => any;
+type SequenceFn = (key: string) => unknown;
 
 interface BaseProps {
   sequences: Record<Sequence, SequenceFn>;
@@ -22,49 +22,60 @@ const useKeySequence = (props: UseKeySequenceProps) => {
     undefined
   );
 
-  const clearTimeOut = () => {
+  const clearTimeOut = React.useCallback(() => {
     clearTimeout(timeOutId);
     setTimeOutId(undefined);
-  };
+  }, [timeOutId]);
 
-  const reset = () => {
+  const reset = React.useCallback(() => {
     setSequence("");
     clearTimeOut();
-  };
+  }, [clearTimeOut]);
 
-  const execute = () => {
-    const fn = sequences[sequence];
-    if (fn != undefined) {
-      fn(sequence);
-    }
-    reset();
-  };
-
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (e.isComposing || !listen) {
-      return;
-    }
-
-    if (e.key === clearMarker) {
+  const execute = React.useCallback(
+    (sequence: string) => {
+      const fn = sequences[sequence];
+      if (fn !== undefined) {
+        fn(sequence);
+      }
       reset();
-    } else if (e.key === triggerMarker) {
-      execute();
-    } else if (e.key.length === 1) {
-      clearTimeOut();
-      setSequence((prev) => sequence + prev);
-    }
-  };
+    },
+    [reset, sequences]
+  );
 
-  const onKeyUp = (e: KeyboardEvent) => {
-    if (e.isComposing || !listen) {
-      return;
-    }
+  const onKeyDown = React.useCallback(
+    (e: KeyboardEvent) => {
+      if (e.isComposing || !listen) {
+        return;
+      }
 
-    if (delay != undefined) {
-      const id = setTimeout(execute, delay);
-      setTimeOutId(id);
-    }
-  };
+      if (e.key === clearMarker) {
+        reset();
+      } else if (e.key === triggerMarker) {
+        execute(sequence);
+      } else if (e.key.length === 1) {
+        clearTimeOut();
+        setSequence((prev) => prev + e.key);
+      }
+    },
+    [clearMarker, triggerMarker, clearTimeOut, listen, reset, sequence, execute]
+  );
+
+  const onKeyUp = React.useCallback(
+    (e: KeyboardEvent) => {
+      if (e.isComposing || !listen) {
+        return;
+      }
+
+      if (delay != undefined) {
+        const id = setTimeout(() => execute(sequence), delay);
+        setTimeOutId(id);
+      }
+    },
+    [sequence, delay, execute, listen]
+  );
+
+  React.useEffect(() => {}, [delay]);
 
   React.useEffect(() => {
     const cleanup = () => window.removeEventListener("keydown", onKeyDown);
@@ -75,7 +86,7 @@ const useKeySequence = (props: UseKeySequenceProps) => {
     } else {
       cleanup();
     }
-  }, [shouldListen]);
+  }, [shouldListen, onKeyDown]);
 
   React.useEffect(() => {
     const cleanup = () => window.removeEventListener("keyup", onKeyUp);
@@ -86,7 +97,7 @@ const useKeySequence = (props: UseKeySequenceProps) => {
     } else {
       cleanup();
     }
-  }, [shouldListen]);
+  }, [shouldListen, onKeyUp]);
 
   return {
     sequence,

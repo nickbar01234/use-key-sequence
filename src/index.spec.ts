@@ -12,7 +12,7 @@ describe("useKeySequence", () => {
         delay: 0,
       })
     );
-    act(() => result.current.execute());
+    act(() => result.current.execute(""));
     expect(fn).toHaveBeenCalledOnce();
   });
 });

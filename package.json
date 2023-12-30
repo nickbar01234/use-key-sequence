@@ -4,8 +4,8 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "pnpm run test && rollup -c",
-    "start": "rollup -c -w",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
     "test": "vitest --run"
   },
   "keywords": [],
@@ -18,8 +18,13 @@
   "devDependencies": {
     "@babel/core": "^7.23.6",
     "@babel/runtime": "^7.23.6",
+    "@testing-library/react-hooks": "^8.0.1",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "jsdom": "^23.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -30,8 +35,5 @@
   },
   "files": [
     "dist"
-  ],
-  "dependencies": {
-    "@testing-library/react-hooks": "^8.0.1"
-  }
+  ]
 }
