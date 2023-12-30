@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "publish": "rollup -c && npm publish"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +32,7 @@
     "react-dom": "^18.2.0",
     "rollup": "^4.9.1",
     "rollup-plugin-typescript2": "^0.36.0",
+    "tslib": "^2.6.2",
     "typescript": "^5.3.3",
     "vitest": "^1.1.0"
   },
