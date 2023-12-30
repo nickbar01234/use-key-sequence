@@ -1,13 +1,13 @@
 {
   "name": "use-key-sequence",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "test": "vitest --run",
-    "publish": "rollup -c && npm publish"
+    "deploy": "rollup -c && npm publish"
   },
   "keywords": [],
   "author": "",

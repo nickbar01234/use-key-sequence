@@ -1,11 +1,8 @@
 import React from "react";
 import { useEventListener } from "./hooks";
 
-type Sequence = string;
-type SequenceFn = () => unknown;
-
 interface BaseProps {
-  sequences: Record<Sequence, SequenceFn>;
+  sequences: Record<string, () => unknown>;
   enabled: boolean;
   clearMarker?: KeyboardEvent["key"];
   delay?: number;
