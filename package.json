@@ -1,7 +1,7 @@
 {
   "name": "use-key-sequence",
-  "version": "1.0.3",
-  "description": "",
+  "version": "1.0.4",
+  "description": "A simple react-hook to trigger callbacks for printable characters",
   "main": "dist/index.js",
   "scripts": {
     "build": "rollup -c",
@@ -9,8 +9,15 @@
     "test": "vitest --run",
     "deploy": "rollup -c && npm publish"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nickbar01234/use-key-sequence"
+  },
+  "keywords": [
+    "react",
+    "react-hook"
+  ],
+  "author": "nickbar01234",
   "license": "ISC",
   "peerDependencies": {
     "react": "^18.2.0",
